@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: stalwart_server_1
+      APP_PORT: 8080
+      PROXY_AUTH_ADD: "false"
+
+  server:
+    image: stalwartlabs/stalwart:v0.15.4@sha256:2a25f80a42a96aaeaa6f07062eb23bcbacfcc27c38bbad163ff5126554e6744c
+    container_name: stalwart_server_1
+    user: "1000:1000"
+    restart: on-failure
+
+    ports:
+      - 10443:443
+      - 10025:25
+      - 10465:465
+      - 10587:587
+      - 10143:143
+      - 10993:993
+      - 14190:4190
+      - 10110:110
+      - 10995:995
+
+    volumes:
+      # Данные Stalwart
+      - ${APP_DATA_DIR}/data:/opt/stalwart
+
+      # 🔐 ГОТОВЫЕ TLS сертификаты (read-only!)
+      - /home/umbrel/certs:/certs:ro
+
+    environment:
+      # 🌐 Основные параметры
+      STALWART_HOSTNAME: mail.555333.ru
+      STALWART_DOMAIN: 555333.ru
+
+      # 🔐 ЯВНО указываем сертификаты
+      STALWART_TLS_CERT: /certs/fullchain.pem
+      STALWART_TLS_KEY: /certs/privkey.pem
+
+      # ❌ запрещаем автогенерацию
+      STALWART_TLS_AUTO: "false"
